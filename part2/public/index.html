@@ -9,14 +9,6 @@
 </head>
 <body class="bg-light">
 
-<!--  <div id="app" class="container py-5">-->
-<!--    <h1 class="mb-4 text-primary">{{ message }}</h1>-->
-<!--    <p class="lead">Connect with trusted walkers for your beloved dog!</p>-->
-
-<!--    <a href="owner-dashboard.html" class="btn btn-outline-primary me-2">Owner Dashboard</a>-->
-<!--    <a href="walker-dashboard.html" class="btn btn-outline-success">Walker Dashboard</a>-->
-<!--  </div>-->
-
 <div id="app" class="container py-5">
     <h1 class="mb-4 text-primary">{{ message }}</h1>
     <p class="lead">Connect with trusted walkers for your beloved dog!</p>
@@ -40,18 +32,42 @@
             </div>
         </div>
     </div>
+
+    <!-- Dogs Table -->
+    <h3 class="mb-4">All Registered Dogs</h3>
+    <div v-if="loading" class="text-center">Loading dogs...</div>
+    <div v-if="error" class="alert alert-danger">{{ error }}</div>
+
+    <div v-if="!loading && dogs.length > 0" class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>Dog ID</th>
+                <th>Name</th>
+                <th>Size</th>
+                <th>Owner ID</th>
+                <th>Photo</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="dog in dogs" :key="dog.dog_id">
+                <td>{{ dog.dog_id }}</td>
+                <td>{{ dog.name }}</td>
+                <td>{{ dog.size }}</td>
+                <td>{{ dog.owner_id }}</td>
+                <td>
+                    <img :src="images[dog.dog_id]" alt="Dog Image" class="img-fluid rounded"
+                         style="width: 100px; height: 100px; object-fit: cover;">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p v-if="!loading && dogs.length === 0">No dogs found.</p>
+</div>
 </div>
 
-<!--  <script>-->
-<!--    const { createApp } = Vue;-->
-<!--    createApp({-->
-<!--      data() {-->
-<!--        return {-->
-<!--          message: 'Welcome to the Dog Walking Service!'-->
-<!--        };-->
-<!--      }-->
-<!--    }).mount('#app');-->
-<!--  </script>-->
 
 <script>  const {createApp} = Vue;
 
@@ -63,7 +79,11 @@ createApp({
                 email: '',
                 password: '',
                 role: ''
-            }
+            },
+            dogs: [],
+            images: {},
+            loading: true,
+            error: null
         };
     },
     methods: {
@@ -103,7 +123,38 @@ createApp({
                 console.error(error);
                 alert('An error occurred during login.');
             }
+        },
+
+        // Fetch all dogs from /api/dogs
+        async fetchDogs() {
+            try {
+                const res = await fetch('/api/dogs');
+                if (!res.ok) throw new Error('Failed to fetch dogs');
+                this.dogs = await res.json();
+                await this.fetchDogImages(); // load images after dogs are loaded
+            } catch (err) {
+                this.error = err.message;
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // Get a random image for each dog using dog.ceo API
+        async fetchDogImages() {
+            for (const dog of this.dogs) {
+                try {
+                    const res = await fetch('https://dog.ceo/api/breeds/image/random');
+                    const data = await res.json();
+                    this.images[dog.dog_id] = data.message;
+                } catch {
+                    // fallback image
+                    this.images[dog.dog_id] = 'https://via.placeholder.com/150';
+                }
+            }
         }
+    },
+    mounted() {
+        this.fetchDogs();
     }
 }).mount('#app');
 </script>

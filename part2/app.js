@@ -13,15 +13,17 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     //https set to true
-    cookie: { secure: false }
+    cookie: {secure: false}
 }));
 
 // Routes
 const walkRoutes = require('./routes/walkRoutes');
 const userRoutes = require('./routes/userRoutes');
+const dogRoutes = require('./routes/dogRoutes');
 
 app.use('/api/walks', walkRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api', dogRoutes);
 
 // Export the app instead of listening here
 module.exports = app;
