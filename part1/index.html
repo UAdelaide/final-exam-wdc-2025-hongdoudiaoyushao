@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dog of the Day</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            color: red;
+            overflow-x: hidden;
+        }
+
+        .container {
+            margin: 50px auto;
+            width: 90%;
+            text-align: center;
+            animation: spin 10s infinite linear;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        img {
+            width: 200px;
+            height: auto;
+            border: 10px dashed yellow;
+            box-shadow: 0 0 20px black;
+            transition: all 0.5s ease-in-out;
+        }
+
+        img:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #000;
+            color: lime;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        h1 {
+            font-size: 4em;
+            text-shadow: 2px 2px 10px white;
+        }
+
+        p {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <h1>🐶 DOG OF THE DAY 🐶</h1>
+
+    <!-- Hidden button far away from content -->
+    <button @click="fetchDog">Click To Load Dog!</button>
+
+    <!-- Flashing container with spinning animated dog -->
+    <div class="container">
+        <img :src="dogImageUrl" alt="" />
+        <p v-if="dogImageUrl">Isn't this a beautiful dog? Probably not in your DB 😂</p>
+    </div>
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                dogImageUrl: null
+            };
+        },
+        methods: {
+            async fetchDog() {
+                try {
+                    const res = await fetch('https://dog.ceo/api/breeds/image/random');
+                    const data = await res.json();
+                    this.dogImageUrl = data.message;
+                } catch (err) {
+                    alert("Error loading dog! Maybe the internet is broken?");
+                }
+            }
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
